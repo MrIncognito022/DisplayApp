@@ -14,7 +14,13 @@ namespace DisplayApp.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> CdrList()
+        public IActionResult CdrsList()
+        {
+            return View();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> CdrListData(string startDate, string endDate)
         {
             var username = HttpContext.Session.GetString("username");
             var password = HttpContext.Session.GetString("password");
@@ -24,8 +30,19 @@ namespace DisplayApp.Controllers
                 return RedirectToAction("Login", "Auth");
             }
 
+            if (string.IsNullOrEmpty(startDate) || string.IsNullOrEmpty(endDate))
+            {
+                return Json(new { success = false, message = "Start date and end date are required" });
+            }
+
+            // Convert dates to Unix timestamps
+            DateTime startDateTime = DateTime.Parse(startDate);
+            DateTime endDateTime = DateTime.Parse(endDate);
+            long startTimestamp = new DateTimeOffset(startDateTime).ToUnixTimeSeconds();
+            long endTimestamp = new DateTimeOffset(endDateTime).ToUnixTimeSeconds();
+
             var request = new HttpRequestMessage(HttpMethod.Get,
-                $"https://www.015pbx.net/local/api/json/cdrs/list/?auth_username={username};auth_password={password}");
+                $"https://www.015pbx.net/local/api/json/cdrs/list/?auth_username={username};auth_password={password};start={startTimestamp};end={endTimestamp}");
 
             var client = _clientFactory.CreateClient();
             var response = await client.SendAsync(request);
@@ -40,5 +57,6 @@ namespace DisplayApp.Controllers
                 return Json(new { success = false, message = "Error fetching data" });
             }
         }
+
     }
 }
