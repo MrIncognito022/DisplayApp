@@ -4,6 +4,8 @@
     var yesterday = DateTime.Now.AddDays(-1).ToString("yyyy-MM-dd");
 }
 
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/dataTables.bootstrap4.min.css">
+
 <div class="container mt-5">
     <h2 class="mb-4">CDR List</h2>
 
@@ -27,32 +29,90 @@
         <button class="btn btn-primary" type="submit">Get CDR List</button>
     </form>
 
-    <div id="result" class="mt-4"></div>
+    <div class="table-responsive mt-4">
+        <table id="cdrTable" class="table table-striped table-bordered" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Customer</th>
+                    <th>Caller Name</th>
+                    <th>Caller ID</th>
+                    <th>Called Number</th>
+                    <th>Start Time</th>
+                    <th>End Time</th>
+                    <th>Duration</th>
+                    <th>Status</th>
+                    <th>Cost</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
 </div>
 
 @section Scripts {
+
     <script>
-        document.getElementById("cdrForm").addEventListener("submit", function (event) {
-            event.preventDefault();
+        $(document).ready(function () {
+            var table = $('#cdrTable').DataTable();
 
-            const startDate = document.getElementById("startDate").value;
-            const endDate = document.getElementById("endDate").value;
+            $('#cdrForm').on('submit', function (event) {
+                event.preventDefault();
 
-            fetch(`/Calls/CdrListData?startDate=${startDate}&endDate=${endDate}`)
-                .then(response => response.json())
-                .then(data => {
-                    const resultDiv = document.getElementById("result");
-                    if (data.success) {
-                        resultDiv.textContent = JSON.stringify(data.data, null, 2);
-                        resultDiv.className = "alert alert-success";
-                    } else {
-                        resultDiv.textContent = data.message;
-                        resultDiv.className = "alert alert-danger";
-                    }
-                })
-                .catch(error => {
-                    console.error("Error fetching data:", error);
-                });
+                const startDate = $('#startDate').val();
+                const endDate = $('#endDate').val();
+
+                fetch(`/Calls/CdrListData?startDate=${startDate}&endDate=${endDate}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log(data); // Log the entire data object
+
+                        // Check if data format is as expected
+                        if (data && data.success && data.data) {
+                            try {
+                                const parsedData = JSON.parse(data.data); // Parse the data.data property
+                                if (Array.isArray(parsedData.data)) {
+                                    table.clear().draw();
+                                    parsedData.data.forEach(record => {
+                                        addTableRow(table, record);
+                                    });
+                                } else {
+                                    console.error("Error: Data format is not as expected");
+                                }
+                            } catch (error) {
+                                console.error("Error parsing JSON data:", error);
+                            }
+                        } else {
+                            console.error("Error: Data format is not as expected");
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error fetching data:", error);
+                    });
+            });
+
+            // Function to add a table row for a record
+            function addTableRow(table, record) {
+                table.row.add([
+                    record.customer_name,
+                    record.callername,
+                    record.callerid_external,
+                    record.dnumber,
+                    new Date(record.start * 1000).toLocaleString(),
+                    new Date(record.end * 1000).toLocaleString(),
+                    record.totaltime,
+                    record.status,
+                    record.cost
+                ]).draw();
+            }
         });
     </script>
+
+
+
 }
