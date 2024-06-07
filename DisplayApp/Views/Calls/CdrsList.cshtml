@@ -4,27 +4,42 @@
     var yesterday = DateTime.Now.AddDays(-1).ToString("yyyy-MM-dd");
 }
 
-<link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/dataTables.bootstrap4.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-
 <div class="container mt-5">
     <h2 class="mb-4">@ViewData["Title"]</h2>
 
     <form id="cdrForm" class="needs-validation" novalidate>
         <div class="row">
-            <div class="col-md-5 mb-3">
+            <div class="col-md-3 mb-3">
                 <label for="startDate">Start Date</label>
                 <input type="date" class="form-control" id="startDate" name="startDate" required value="@yesterday" />
                 <div class="invalid-feedback">
                     Please select a start date.
                 </div>
             </div>
-            <div class="col-md-5 mb-3">
+            <div class="col-md-3 mb-3">
                 <label for="endDate">End Date</label>
                 <input type="date" class="form-control" id="endDate" name="endDate" required value="@today" />
                 <div class="invalid-feedback">
                     Please select an end date.
                 </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <label for="callType">Call Type</label>
+                <select class="form-control" id="callType">
+                    <option value="">All</option>
+                    <option value="in">Inbound</option>
+                    <option value="internal">Internal</option>
+                    <option value="out">Outbound</option>
+                </select>
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <label for="status">Status</label>
+                <select class="form-control" id="status">
+                    <option value="">All</option>
+                    <option value="answer">Answer</option>
+                    <option value="cancel">Cancel</option>
+                </select>
             </div>
         </div>
         <div class="row">
@@ -61,7 +76,6 @@
 </div>
 
 @section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         $(document).ready(function () {
             var table = $('#cdrTable').DataTable();
@@ -70,6 +84,8 @@
                 event.preventDefault();
                 const startDate = $('#startDate').val();
                 const endDate = $('#endDate').val();
+                const callType = $('#callType').val(); // Get selected call type
+                const status = $('#status').val(); // Get selected call type
 
                 // Validation check for start date and end date
                 if (new Date(startDate) > new Date(endDate)) {
@@ -83,14 +99,22 @@
 
                 $('#spinner').show(); // Show the spinner
 
-                fetch(`/Calls/CdrListData?startDate=${startDate}&endDate=${endDate}`)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok');
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
+                // Construct the API URL with call type
+                let apiUrl = `/Calls/CdrListData?startDate=${startDate}&endDate=${endDate}`;
+                if (callType) {
+                    apiUrl += `&direction=${callType}`;
+                }
+                if(status){
+                    apiUrl += `&status=${status}`;
+                }
+
+                console.log(apiUrl);
+
+                // Make an AJAX call to the controller action
+                $.ajax({
+                    url: apiUrl,
+                    type: 'GET',
+                    success: function (data) {
                         console.log(data); // Log the entire data object
 
                         // Check if data format is as expected
@@ -115,17 +139,18 @@
                         } else {
                             throw new Error("Data format is not as expected");
                         }
-                    })
-                    .catch(error => {
+                    },
+                    error: function (xhr, status, error) {
                         Swal.fire({
                             icon: 'error',
                             title: 'Fetch Error',
-                            text: 'Error fetching data: ' + error.message,
+                            text: 'Error fetching data: ' + error,
                         });
-                    })
-                    .finally(() => {
+                    },
+                    complete: function () {
                         $('#spinner').hide(); // Hide the spinner
-                    });
+                    }
+                });
             });
 
             // Function to add a table row for a record
