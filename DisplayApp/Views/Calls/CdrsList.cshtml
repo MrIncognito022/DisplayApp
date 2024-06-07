@@ -1,13 +1,14 @@
 ﻿@{
-    ViewData["Title"] = "CDR List";
+    ViewData["Title"] = "Calls History";
     var today = DateTime.Now.ToString("yyyy-MM-dd");
     var yesterday = DateTime.Now.AddDays(-1).ToString("yyyy-MM-dd");
 }
 
 <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/dataTables.bootstrap4.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
 <div class="container mt-5">
-    <h2 class="mb-4">CDR List</h2>
+    <h2 class="mb-4">@ViewData["Title"]</h2>
 
     <form id="cdrForm" class="needs-validation" novalidate>
         <div class="row">
@@ -28,16 +29,14 @@
         </div>
         <div class="row">
             <div class="col-md-2">
-
                 <button class="btn btn-primary" type="submit">Get CDR List</button>
             </div>
             <div class="col-md-2">
-                <div id="spinner" class="spinner-border text-danger " role="status" style="display: none;">
+                <div id="spinner" class="spinner-border text-danger" role="status" style="display: none;">
                     <span class="sr-only"></span>
                 </div>
             </div>
         </div>
-
     </form>
 
     <div class="table-responsive mt-4">
@@ -62,6 +61,7 @@
 </div>
 
 @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         $(document).ready(function () {
             var table = $('#cdrTable').DataTable();
@@ -70,6 +70,17 @@
                 event.preventDefault();
                 const startDate = $('#startDate').val();
                 const endDate = $('#endDate').val();
+
+                // Validation check for start date and end date
+                if (new Date(startDate) > new Date(endDate)) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Invalid Date Range',
+                        text: 'Start date cannot be greater than end date.',
+                    });
+                    return;
+                }
+
                 $('#spinner').show(); // Show the spinner
 
                 fetch(`/Calls/CdrListData?startDate=${startDate}&endDate=${endDate}`)
@@ -92,17 +103,25 @@
                                         addTableRow(table, record);
                                     });
                                 } else {
-                                    console.error("Error: Data format is not as expected");
+                                    throw new Error("Data format is not as expected");
                                 }
                             } catch (error) {
-                                console.error("Error parsing JSON data:", error);
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Data Error',
+                                    text: 'Error parsing data: ' + error.message,
+                                });
                             }
                         } else {
-                            console.error("Error: Data format is not as expected");
+                            throw new Error("Data format is not as expected");
                         }
                     })
                     .catch(error => {
-                        console.error("Error fetching data:", error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Fetch Error',
+                            text: 'Error fetching data: ' + error.message,
+                        });
                     })
                     .finally(() => {
                         $('#spinner').hide(); // Hide the spinner

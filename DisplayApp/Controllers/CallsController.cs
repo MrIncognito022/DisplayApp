@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -36,19 +35,7 @@ namespace DisplayApp.Controllers
             long startTimestamp = new DateTimeOffset(startDateTime).ToUnixTimeSeconds();
             long endTimestamp = new DateTimeOffset(endDateTime).ToUnixTimeSeconds();
 
-            var handler = new HttpClientHandler
-            {
-                UseProxy = true,
-                Proxy = new WebProxy("http://10.50.151.251:2356", true)
-                {
-                    Credentials = new NetworkCredential("13068", "13068")
-                },
-                UseDefaultCredentials = false
-            };
-
-            handler.Proxy.Credentials = new NetworkCredential("13068", "13068");
-
-            using (var client = new HttpClient(handler))
+            using (var client = new HttpClient())
             {
                 var request = new HttpRequestMessage(HttpMethod.Get,
                     $"https://www.015pbx.net/local/api/json/cdrs/list/?auth_username={username}&auth_password={password}&start={startTimestamp}&end={endTimestamp}");
@@ -70,8 +57,8 @@ namespace DisplayApp.Controllers
                 catch (HttpRequestException ex)
                 {
                     // Log or handle the exception as needed
-                    Console.WriteLine($"Proxy connection error: {ex.Message}");
-                    return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Error connecting to API through proxy" });
+                    Console.WriteLine($"Request error: {ex.Message}");
+                    return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Error connecting to API" });
                 }
             }
         }
