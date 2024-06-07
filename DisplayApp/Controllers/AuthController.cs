@@ -32,7 +32,7 @@ namespace DisplayApp.Controllers
             {
                 HttpContext.Session.SetString("username", username);
                 HttpContext.Session.SetString("password", password);
-                return RedirectToAction("Index", "Home"); // Redirect to Home page after successful login
+                return RedirectToAction("CdrsList", "Calls"); // Redirect to Home page after successful login
             }
 
             ViewBag.Error = "Invalid credentials";
