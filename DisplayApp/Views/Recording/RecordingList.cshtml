@@ -40,14 +40,14 @@
         <table id="cdrTable" class="table table-striped table-bordered" style="width:100%">
             <thead>
                 <tr>
-                    <th>Customer ID</th>
-                    <th>Caller Name</th>
-                    <th>Caller ID</th>
-                    <th>Called Number</th>
-                    <th>Start Time</th>
-                    <th>End Time</th>
+                    <th>Record ID</th>
+                    <th>Unique ID</th>
+                    <th>Record Group</th>
+                    <th>Caller Number</th>
+                    <th>Receiver Number</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
                     <th>Duration</th>
-                    <th>Status</th>
                 </tr>
             </thead>
             <tbody>
@@ -128,14 +128,14 @@
             // Function to add a table row for a record
             function addTableRow(table, record) {
                 table.row.add([
-                    record.scustomer,
-                    record.cnumber_name,
-                    record.callerid_internal,
+                    record.recordid,
+                    record.uniqueid,
+                    record.recordgroup,
+                    record.snumber,
                     record.dnumber,
                     new Date(record.start * 1000).toLocaleString(),
                     new Date(record.end * 1000).toLocaleString(),
-                    record.totaltime + ' seconds',
-                    record.complete == "1" ? "Completed" : "Incomplete",
+                    record.totaltime + ' seconds'
                 ]).draw();
             }
         });
