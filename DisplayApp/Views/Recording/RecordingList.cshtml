@@ -36,6 +36,9 @@
         </div>
     </form>
 
+    <!-- Container for audio player -->
+    <div id="audioContainer"></div>
+
     <div class="table-responsive mt-4">
         <table id="cdrTable" class="table table-striped table-bordered" style="width:100%">
             <thead>
@@ -48,6 +51,7 @@
                     <th>Start Date</th>
                     <th>End Date</th>
                     <th>Duration</th>
+                    <th>Action</th> <!-- Add a new column for the play button -->
                 </tr>
             </thead>
             <tbody>
@@ -127,7 +131,7 @@
 
             // Function to add a table row for a record
             function addTableRow(table, record) {
-                table.row.add([
+                var row = [
                     record.recordid,
                     record.uniqueid,
                     record.recordgroup,
@@ -136,8 +140,48 @@
                     new Date(record.start * 1000).toLocaleString(),
                     new Date(record.end * 1000).toLocaleString(),
                     record.totaltime + ' seconds'
-                ]).draw();
+                ];
+
+                // Add a play button to the row
+                row.push('<button class="btn btn-primary play-button" data-recordgroup="' + record.recordgroup + '" data-uniqueid="' + record.uniqueid + '" data-recordid="' + record.recordid + '">Play</button>');
+
+                table.row.add(row).draw();
             }
+
+            // Event listener for play button clicks
+            $(document).on('click', '.play-button', function () {
+                var recordgroup = $(this).data('recordgroup');
+                var uniqueid = $(this).data('uniqueid');
+                var recordid = $(this).data('recordid');
+
+                // Make AJAX call to play the recording
+                $.ajax({
+                    url: '/Recording/PlayRecording?recordgroup=' + recordgroup + '&uniqueid=' + uniqueid + '&recordid=' + recordid,
+                    type: 'GET',
+                    success: function (response) {
+                        let responseData = JSON.parse(response.data);
+                        if (responseData && responseData.data.data) {
+                            // Extract the audio data from the parsed response data
+                            var audioData = responseData.data.data;
+
+                            // Create an <audio> element dynamically
+                            var audio = new Audio();
+
+                            // Set the src attribute to a data URL representing the audio data
+                            audio.src = 'data:audio/wav;base64,' + audioData;
+
+                            // Append the <audio> element to the DOM (e.g., to a container element)
+                            document.getElementById('audioContainer').appendChild(audio);
+
+                            // Play the audio
+                            audio.play();
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.log('Error playing recording:', error);
+                    }
+                });
+            });
         });
     </script>
 }
