@@ -26,7 +26,7 @@
         </div>
         <div class="row">
             <div class="col-md-2">
-                <button class="btn btn-primary" type="submit">Get Recording List</button>
+                <button class="btn btn-primary" type="submit">Get CDR List</button>
             </div>
             <div class="col-md-2">
                 <div id="spinner" class="spinner-border text-danger" role="status" style="display: none;">
@@ -107,6 +107,12 @@
                         console.log('Error playing recording:', error);
                     }
                 });
+            });
+
+            // Event listener for modal close event
+            $('#audioModal').on('hidden.bs.modal', function (e) {
+                // Pause the audio when the modal is closed
+                $('#audioPlayer')[0].pause();
             });
 
             $('#cdrForm').on('submit', function (event) {
