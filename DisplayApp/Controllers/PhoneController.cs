@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using DisplayApp.Models;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace DisplayApp.Controllers
 {
@@ -77,21 +79,24 @@ namespace DisplayApp.Controllers
                     if (response.IsSuccessStatusCode)
                     {
                         var content = await response.Content.ReadAsStringAsync();
-                        return Json(new { success = true, data = content });
+                        var phoneData = JsonConvert.DeserializeObject<PhoneDataModel>(content);
+
+                        return View("GetPhoneData", phoneData); // Pass the model to the view
                     }
                     else
                     {
-                        return Json(new { success = false, message = "Error fetching data" });
+                        return Content("Error fetching data");
                     }
                 }
                 catch (HttpRequestException ex)
                 {
                     // Log or handle the exception as needed
                     Console.WriteLine($"Request error: {ex.Message}");
-                    return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Error connecting to API" });
+                    return Content("Error connecting to API");
                 }
             }
         }
+
 
 
     }
