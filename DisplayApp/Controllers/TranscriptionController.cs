@@ -17,6 +17,10 @@ namespace DisplayApp.Controllers
         [HttpPost]
         public async Task<IActionResult> TranscribeAudio(string encodedAudioData)
         {
+            if (string.IsNullOrEmpty(encodedAudioData))
+            { 
+                return BadRequest("EncodedAudioData is null or empty.");
+            }
             try
             {
                 // Decode the Base64 string

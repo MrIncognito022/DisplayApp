@@ -1,11 +1,25 @@
+using Microsoft.AspNetCore.Http.Features;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpClient();
+// Configure services for large request sizes and timeouts
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestBodySize = 100 * 1024 * 1024; // 100 MB, adjust as needed
+});
+
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 100 * 1024 * 1024; // 100 MB, adjust as needed
+});
+
+
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(300); // Set session timeout
+    options.IdleTimeout = TimeSpan.FromMinutes(3000); // Set session timeout
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 }); // Add se

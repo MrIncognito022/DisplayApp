@@ -4,6 +4,8 @@
     var yesterday = DateTime.Now.AddDays(-1).ToString("yyyy-MM-dd");
 }
 
+
+
 <div class="container mt-5">
     <h2 class="mb-4">@ViewData["Title"]</h2>
 
@@ -95,6 +97,23 @@
     </div>
 </div>
 
+<style>
+    #transcriptionModal .modal-dialog {
+        max-width: 80%;
+    }
+
+    #transcriptionModal .modal-body {
+        word-wrap: break-word;
+    }
+
+    #transcriptionText {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+</style>
+
+
+
 @section Scripts {
     <script>
         $(document).ready(function () {
@@ -123,8 +142,14 @@
                                 type: 'POST',
                                 data: { encodedAudioData: audioData },
                                 success: function (transcriptionResponse) {
-                                    alert("Success");
                                     console.log(transcriptionResponse);
+                                    if (transcriptionResponse.transcription) {
+                                        // Display transcription in the modal
+                                        $('#transcriptionText').text(transcriptionResponse.transcription);
+                                        $('#transcriptionModal').modal('show');
+                                    } else {
+                                        console.error('Invalid transcription response:', transcriptionResponse);
+                                    }
                                 },
                                 error: function (xhr, status, error) {
                                     console.error('Transcription error:', status, error);
@@ -139,6 +164,7 @@
                     }
                 });
             });
+
 
 
             // Event listener for play button clicks
