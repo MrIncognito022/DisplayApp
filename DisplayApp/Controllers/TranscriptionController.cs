@@ -15,10 +15,12 @@ namespace DisplayApp.Controllers
             _httpClient = new HttpClient();
         }
         [HttpPost]
+        [RequestSizeLimit(104857600)] // Example: 100 MB
+        [RequestFormLimits(MultipartBodyLengthLimit = 104857600)] // Example: 100 MB
         public async Task<IActionResult> TranscribeAudio(string encodedAudioData)
         {
             if (string.IsNullOrEmpty(encodedAudioData))
-            { 
+            {  
                 return BadRequest("EncodedAudioData is null or empty.");
             }
             try

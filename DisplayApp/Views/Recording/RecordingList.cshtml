@@ -137,10 +137,12 @@
                         if (responseData && responseData.data && responseData.data.data) {
                             // Extract the audio data from the parsed response data
                             var audioData = responseData.data.data;
+                            console.log(audioData)
                             $.ajax({
                                 url: '/Transcription/TranscribeAudio',
                                 type: 'POST',
                                 data: { encodedAudioData: audioData },
+                                timeout: 0,
                                 success: function (transcriptionResponse) {
                                     console.log(transcriptionResponse);
                                     if (transcriptionResponse.transcription) {

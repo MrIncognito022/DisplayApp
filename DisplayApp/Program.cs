@@ -6,14 +6,19 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpClient();
 // Configure services for large request sizes and timeouts
-builder.WebHost.ConfigureKestrel(options =>
-{
-    options.Limits.MaxRequestBodySize = 100 * 1024 * 1024; // 100 MB, adjust as needed
-});
 
+builder.Services.AddHttpClient();
+
+// Configure services
 builder.Services.Configure<FormOptions>(options =>
 {
-    options.MultipartBodyLengthLimit = 100 * 1024 * 1024; // 100 MB, adjust as needed
+    options.MultipartBodyLengthLimit = 104857600; // Example: 100 MB
+});
+
+// Configure Kestrel server options
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    serverOptions.Limits.MaxRequestBodySize = 104857600; // Example: 100 MB
 });
 
 
@@ -22,7 +27,8 @@ builder.Services.AddSession(options =>
     options.IdleTimeout = TimeSpan.FromMinutes(3000); // Set session timeout
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
-}); // Add se
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
