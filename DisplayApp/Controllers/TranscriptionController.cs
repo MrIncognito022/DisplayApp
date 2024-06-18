@@ -14,38 +14,76 @@ namespace DisplayApp.Controllers
         {
             _httpClient = new HttpClient();
         }
-        [HttpPost]
-        [RequestSizeLimit(104857600)] // Example: 100 MB
-        [RequestFormLimits(MultipartBodyLengthLimit = 104857600)] // Example: 100 MB
-        public async Task<IActionResult> TranscribeAudio(string encodedAudioData)
+        public async Task<IActionResult> TranscribeAudio(int recordgroup, string uniqueid, string recordid)
         {
-            if (string.IsNullOrEmpty(encodedAudioData))
-            {  
-                return BadRequest("EncodedAudioData is null or empty.");
+            var username = HttpContext.Session.GetString("username");
+            var password = HttpContext.Session.GetString("password");
+
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
+            { 
+                // If not authenticated, redirect to the login pagev
+                return RedirectToAction("Login", "Auth");
             }
-            try
+
+            // Prepare the API URL for playing the recording
+            var apiUrl = $"https://www.015pbx.net/local/api/json/recording/recordings/get/?auth_username={username}&auth_password={password}&recordgroup={recordgroup}&uniqueid={uniqueid}&recordid={recordid}";
+
+            using (var client = new HttpClient())
             {
-                // Decode the Base64 string
-                byte[] audioBytes = Convert.FromBase64String(encodedAudioData);
+                var request = new HttpRequestMessage(HttpMethod.Get, apiUrl);
 
-                // Save the audio file temporarily
-                string tempFilePath = Path.GetTempFileName() + ".wav";
-                await System.IO.File.WriteAllBytesAsync(tempFilePath, audioBytes);
+                try
+                {
+                    var response = await client.SendAsync(request);
 
-                // Call Azure Speech to Text service
-                string transcription = await GetTranscriptionFromAzure(tempFilePath);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        // Read the response content
+                        var content = await response.Content.ReadAsStringAsync();
+                        //return Ok(new { success = true, data = content });
+                        var jsonResponse = JObject.Parse(content);
+                        var nestedData = jsonResponse["data"]?["data"]?.ToString();
+                        if (string.IsNullOrEmpty(nestedData))
+                        {
+                            return BadRequest("Enco dedAudioData is null or empty.");
+                        }
+                        try
+                        {
+                            // Decode the Base64 string
+                            byte[] audioBytes = Convert.FromBase64String(nestedData);
 
-                // Delete the temporary file
-                System.IO.File.Delete(tempFilePath);
+                            // Save the audio file temporarily
+                            string tempFilePath = Path.GetTempFileName() + ".wav";
+                            await System.IO.File.WriteAllBytesAsync(tempFilePath, audioBytes);
 
-                return Ok(new { transcription });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "An error occurred while processing the request.", error = ex.Message });
+                            // Call Azure Speech to Text service
+                            string transcription = await GetTranscriptionFromAzure(tempFilePath);
+
+                            // Delete the temporary file
+                            System.IO.File.Delete(tempFilePath);
+
+                            return Ok(new { transcription });
+                        }
+                        catch (Exception ex)
+                        {
+                            return StatusCode(500, new { message = "An error occurred while processing the request.", error = ex.Message });
+                        }
+
+                    }
+                    else
+                    {
+                        // Handle unsuccessful response from the API
+                        return BadRequest(new { success = false, message = "Error Getting recording" });
+                    }
+                }
+                catch (HttpRequestException ex)
+                {
+                    // Log or handle the exception as needed
+                    Console.WriteLine($"Request error: {ex.Message}");
+                    return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Error connecting to API" });
+                }
             }
         }
-
         private async Task<string> GetTranscriptionFromAzure(string filePath)
         {
             string subscriptionKey = "465e6b09667143dea5966343c991f323";

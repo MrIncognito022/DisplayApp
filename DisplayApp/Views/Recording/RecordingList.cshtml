@@ -123,52 +123,29 @@
                 var recordGroup = $(this).data('recordgroup');
                 var uniqueId = $(this).data('uniqueid');
                 var recordId = $(this).data('recordid');
-
                 $.ajax({
-                    url: '/Recording/PlayRecording',
-                    type: 'GET',
+                    url: '/Transcription/TranscribeAudio',
+                    type: 'POST',
                     data: {
                         recordgroup: recordGroup,
                         uniqueid: uniqueId,
                         recordid: recordId
                     },
-                    success: function (response) {
-                        let responseData = JSON.parse(response.data);
-                        if (responseData && responseData.data && responseData.data.data) {
-                            // Extract the audio data from the parsed response data
-                            var audioData = responseData.data.data;
-                            console.log(audioData)
-                            $.ajax({
-                                url: '/Transcription/TranscribeAudio',
-                                type: 'POST',
-                                data: { encodedAudioData: audioData },
-                                timeout: 0,
-                                success: function (transcriptionResponse) {
-                                    console.log(transcriptionResponse);
-                                    if (transcriptionResponse.transcription) {
-                                        // Display transcription in the modal
-                                        $('#transcriptionText').text(transcriptionResponse.transcription);
-                                        $('#transcriptionModal').modal('show');
-                                    } else {
-                                        console.error('Invalid transcription response:', transcriptionResponse);
-                                    }
-                                },
-                                error: function (xhr, status, error) {
-                                    console.error('Transcription error:', status, error);
-                                }
-                            });
+                    success: function (transcriptionResponse) {
+                        console.log(transcriptionResponse);
+                        if (transcriptionResponse.transcription) {
+                            // Display transcription in the modal
+                            $('#transcriptionText').text(transcriptionResponse.transcription);
+                            $('#transcriptionModal').modal('show');
                         } else {
-                            console.error('Invalid response format:', response);
+                            console.error('Invalid transcription response:', transcriptionResponse);
                         }
                     },
                     error: function (xhr, status, error) {
-                        console.error('Error playing recording:', status, error);
+                        console.error('Transcription error:', status, error);
                     }
                 });
             });
-
-
-
             // Event listener for play button clicks
             $(document).on('click', '.play-button', function () {
                 var recordgroup = $(this).data('recordgroup');
