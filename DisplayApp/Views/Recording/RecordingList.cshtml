@@ -67,6 +67,7 @@
                     <th>End Date</th>
                     <th>Duration</th>
                     <th>Action</th> <!-- Add a new column for the play button -->
+                    <th>Transcribe</th> <!-- Add a new column for the play button -->
                 </tr>
             </thead>
             <tbody>
@@ -79,6 +80,33 @@
     <script>
         $(document).ready(function () {
             var table = $('#cdrTable').DataTable();
+            //Event Listner for Transcribe Button
+            $(document).on('click', '.transcribe-button', function () {
+                var recordgroup = $(this).data('recordgroup');
+                var uniqueid = $(this).data('uniqueid');
+                var recordid = $(this).data('recordid');
+
+                $.ajax({
+                    url: '/Recording/PlayRecording?recordgroup=' + recordgroup + '&uniqueid=' + uniqueid + '&recordid=' + recordid,
+                    type: 'GET',
+                    success: function (response) {
+                        let responseData = JSON.parse(response.data);
+                        if (responseData && responseData.data.data) {
+                            // Extract the audio data from the parsed response data
+                            var audioData = responseData.data.data;
+
+                            $.ajax({
+                                url:''
+                            })
+                            console.log(audioData)
+
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.log('Error playing recording:', error);
+                    }
+                });
+            });
 
             // Event listener for play button clicks
             $(document).on('click', '.play-button', function () {
@@ -194,6 +222,7 @@
 
                 // Add a play button to the row
                 row.push('<button class="btn btn-primary play-button" data-recordgroup="' + record.recordgroup + '" data-uniqueid="' + record.uniqueid + '" data-recordid="' + record.recordid + '">Play</button>');
+                row.push('<button class="btn btn-primary transcribe-button" data-recordgroup="' + record.recordgroup + '" data-uniqueid="' + record.uniqueid + '" data-recordid="' + record.recordid + '">Transribe</button>');
 
                 table.row.add(row).draw();
             }
