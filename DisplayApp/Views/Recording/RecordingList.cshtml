@@ -3,8 +3,16 @@
     var today = DateTime.Now.ToString("yyyy-MM-dd");
     var yesterday = DateTime.Now.AddDays(-1).ToString("yyyy-MM-dd");
 }
+@* <div id="spinnerOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.8); z-index: 1050;">
+    <div class="spinner-border" role="status" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+        <span class="sr-only">Loading...</span>
+    </div>
+</div> *@
 
 
+<div id="spinnermiddle" class="spinner-border text-danger" role="status" style="display: none; position: fixed; top: 50%; left: 50%; z-index: 1050;">
+    <span class="sr-only"></span>
+</div>
 
 <div class="container mt-5">
     <h2 class="mb-4">@ViewData["Title"]</h2>
@@ -120,6 +128,7 @@
             var table = $('#cdrTable').DataTable();
             //Event Listner for Transcribe Button
             $(document).on('click', '.transcribe-button', function () {
+                $('#spinnermiddle').show();
                 var recordGroup = $(this).data('recordgroup');
                 var uniqueId = $(this).data('uniqueid');
                 var recordId = $(this).data('recordid');
@@ -136,6 +145,7 @@
                         if (transcriptionResponse.transcription) {
                             // Display transcription in the modal
                             $('#transcriptionText').text(transcriptionResponse.transcription);
+                            $('#spinnermiddle').hide();
                             $('#transcriptionModal').modal('show');
                         } else {
                             console.error('Invalid transcription response:', transcriptionResponse);
