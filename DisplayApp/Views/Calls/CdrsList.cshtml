@@ -3,10 +3,8 @@
     var today = DateTime.Now.ToString("yyyy-MM-dd");
     var yesterday = DateTime.Now.AddDays(-1).ToString("yyyy-MM-dd");
 }
-
 <div class="container mt-5">
     <h2 class="mb-4">@ViewData["Title"]</h2>
-
     <form id="cdrForm" class="needs-validation" novalidate>
         <div class="row">
             <div class="col-md-3 mb-3">
@@ -53,7 +51,6 @@
             </div>
         </div>
     </form>
-
     <div class="table-responsive mt-4">
         <table id="cdrTable" class="table table-striped table-bordered" style="width:100%">
             <thead>
@@ -75,19 +72,16 @@
         </table>
     </div>
 </div>
-
 @section Scripts {
     <script>
         $(document).ready(function () {
             var table = $('#cdrTable').DataTable();
-
             $('#cdrForm').on('submit', function (event) {
                 event.preventDefault();
                 const startDate = $('#startDate').val();
                 const endDate = $('#endDate').val();
                 const callType = $('#callType').val(); // Get selected call type
                 const status = $('#status').val(); // Get selected call type
-
                 // Validation check for start date and end date
                 if (new Date(startDate) > new Date(endDate)) {
                     Swal.fire({
@@ -97,9 +91,7 @@
                     });
                     return;
                 }
-
                 $('#spinner').show(); // Show the spinner
-
                 // Construct the API URL with call type
                 let apiUrl = `/Calls/CdrListData?startDate=${startDate}&endDate=${endDate}`;
                 if (callType) {
@@ -108,9 +100,7 @@
                 if(status){
                     apiUrl += `&status=${status}`;
                 }
-
                 console.log(apiUrl);
-
                 // Make an AJAX call to the controller action
                 $.ajax({
                     url: apiUrl,
