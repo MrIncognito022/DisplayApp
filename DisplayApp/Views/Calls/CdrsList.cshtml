@@ -67,6 +67,7 @@
                     <th>Duration</th>
                     <th>Status</th>
                     <th>Cost</th>
+                    <th>Comments</th>
                 </tr>
             </thead>
             <tbody>
@@ -155,6 +156,7 @@
 
             // Function to add a table row for a record
             function addTableRow(table, record) {
+            const commentsUrl = `/comments/comments?uniqueid=${record.uniqueid}`;
                 table.row.add([
                     record.customer_name,
                     record.callername,
@@ -164,7 +166,8 @@
                     new Date(record.end * 1000).toLocaleString(),
                     record.totaltime,
                     record.status,
-                    record.cost
+                    record.cost,
+                    `<a class="btn btn-primary"  href = "${commentsUrl}">Comments</a>`
                 ]).draw();
             }
         });

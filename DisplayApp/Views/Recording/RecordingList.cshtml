@@ -36,7 +36,7 @@
         </div>
         <div class="row">
             <div class="col-md-2">
-                <button class="btn btn-primary" type="submit">Get CDR List</button>
+                <button class="btn btn-primary" type="submit">Get Recording</button>
             </div>
             <div class="col-md-2">
                 <div id="spinner" class="spinner-border text-danger" role="status" style="display: none;">
@@ -119,9 +119,6 @@
         word-wrap: break-word;
     }
 </style>
-
-
-
 @section Scripts {
     <script>
         $(document).ready(function () {
@@ -264,7 +261,6 @@
                 // Add a play button to the row
                 row.push('<button class="btn btn-primary play-button" data-recordgroup="' + record.recordgroup + '" data-uniqueid="' + record.uniqueid + '" data-recordid="' + record.recordid + '">Play</button>');
                 row.push('<button class="btn btn-primary transcribe-button" data-recordgroup="' + record.recordgroup + '" data-uniqueid="' + record.uniqueid + '" data-recordid="' + record.recordid + '">Transribe</button>');
-
                 table.row.add(row).draw();
             }
         });
