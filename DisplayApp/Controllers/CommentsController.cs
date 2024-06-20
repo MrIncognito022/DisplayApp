@@ -14,13 +14,14 @@ namespace DisplayApp.Controllers
             _context = context;
         }
 
+        [HttpGet]
         public IActionResult Comments(string uniqueId)
         {
-            if(uniqueId!= null)
+            if (uniqueId != null)
             {
-            var comments = _context.Comments.Where(x=>x.UniqueId == uniqueId).ToList();
-            ViewBag.temp_uniqueId = uniqueId;
-            return View(comments);
+                var comments = _context.Comments.Where(x => x.UniqueId == uniqueId).ToList();
+                ViewBag.temp_uniqueId = uniqueId;
+                return View(comments);
             }
 
             return RedirectToAction("comments", "comments");
@@ -30,14 +31,20 @@ namespace DisplayApp.Controllers
         public IActionResult Add(string uniqueId)
         {
             ViewBag.UniqueId = uniqueId;
-            return View();
+            var model = new AddCommentsViewModel
+            {
+                UniqueId = uniqueId
+            };
+            return View(model);
         }
+
         [HttpPost]
-        public IActionResult Add(AddCommentsViewModel model)
+        [AutoValidateAntiforgeryToken]
+        public IActionResult Add(AddCommentsViewModel model, string uniqueId)
         {
             if (ModelState.IsValid)
             {
-                var comments = new Comments()
+                var comment = new Comments
                 {
                     UniqueId = model.UniqueId,
                     Comment = model.Comment,
@@ -45,13 +52,14 @@ namespace DisplayApp.Controllers
                     CreatedAt = DateTime.Now
                 };
 
-                _context.Add(comments);
+                _context.Add(comment);
                 _context.SaveChanges();
-                return RedirectToAction("Comments");
+                return RedirectToAction("Comments", new { uniqueId = model.UniqueId });
             }
-            return View();
-        }
 
+            ViewBag.UniqueId = uniqueId;
+            return View(model);
+        }
 
         [HttpGet]
         public IActionResult Edit(int id)
@@ -74,6 +82,7 @@ namespace DisplayApp.Controllers
         }
 
         [HttpPost]
+        [AutoValidateAntiforgeryToken]
         public IActionResult Edit(EditCommentsViewModel model)
         {
             if (ModelState.IsValid)
@@ -120,9 +129,5 @@ namespace DisplayApp.Controllers
 
             return RedirectToAction("Comments", new { uniqueId = comment.UniqueId });
         }
-
-
-
-
     }
 }

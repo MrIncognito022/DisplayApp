@@ -1,6 +1,7 @@
-﻿@model DisplayApp.Models.AddCommentsViewModel;
-<form asp-action="Add" asp-controller="Comments">
-    <input type="hidden" asp-for="UniqueId" value="@ViewBag.UniqueId" />
+﻿@model DisplayApp.Models.AddCommentsViewModel
+
+<form asp-action="Add" asp-controller="Comments" asp-route-uniqueId="@ViewBag.UniqueId">
+    <input type="hidden" asp-for="UniqueId" />
     <div class="form-group">
         <label asp-for="Comment" class="control-label"></label>
         <textarea asp-for="Comment" class="form-control"></textarea>
